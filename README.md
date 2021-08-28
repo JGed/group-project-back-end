@@ -16,6 +16,7 @@
 - servings - number
 - public - boolean
 - photoURL - string
+- views - number
 
 ## usercontroller
 
