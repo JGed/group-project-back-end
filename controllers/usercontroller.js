@@ -64,4 +64,39 @@ router.post('/register', async (req, res) => {
     }
 });
 
+/*
+    User Login
+*/
+router.post('/login', async (req, res) => {
+    const {
+        email,
+        password
+    } = req.body.user;
+    const user = await User.findOne({
+        where: {
+            email: email
+        }
+    })
+    if(user !== null) {
+        bcrypt.compare(password, user.passwordhash, (err, matches) => {
+            if(!err && matches) {
+                let token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24})
+                res.status(200).json({
+                    message: 'User sucessfully logged in!',
+                    sessionToken: token
+                })
+            }
+            else {
+                res.status(502).json({
+                    message: 'Incorrect password.'
+                })
+            }
+        })
+    }
+    else {
+        res.status(500).json({
+            message: 'Email not registered.'
+        })
+    }
+})
 module.exports = router;
