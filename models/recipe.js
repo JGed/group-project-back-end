@@ -29,10 +29,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 0
         },
-        owner: {
-            type: DataTypes.INTEGER,
-            allowNull: false
-        },
         isPublic: {
             type: DataTypes.BOOLEAN,
             allowNull: false,

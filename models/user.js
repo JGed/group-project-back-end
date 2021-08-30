@@ -1,3 +1,5 @@
+const Recipe = require('../db').import('./recipe');
+
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define('user', {
         email: {
@@ -15,5 +17,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
     })
+    User.hasMany(Recipe);
     return User;
 }
