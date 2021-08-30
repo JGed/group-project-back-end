@@ -40,6 +40,15 @@ router.post('/create', validateSession, async (req, res) => {
         isPublic
     } = req.body.recipe;
     try {
+        // const newRecipe = await user.create(Recipe, {
+        //     name: name,
+        //     category: category,
+        //     directions: directions,
+        //     cookTime: cookTime,
+        //     servings: servings,
+        //     photoURL: photoURL,
+        //     isPublic: isPublic,
+        // })
         const newRecipe = await Recipe.create({
             name: name,
             category: category,
@@ -53,6 +62,26 @@ router.post('/create', validateSession, async (req, res) => {
         res.status(200).json({
             message: 'Recipe successfully created!',
             recipe: newRecipe
+        })
+    } catch(error) {
+        res.status(500).json({
+            error: error
+        })
+    }
+})
+
+/*
+    get all public recipes
+*/
+router.get('/public', async (req, res) => {
+    try {
+        const recipes = await Recipe.findAll({
+            where: {
+                isPublic: true
+            }
+        });
+        res.status(200).json({
+            recipes: recipes
         })
     } catch(error) {
         res.status(500).json({
