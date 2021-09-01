@@ -1,17 +1,18 @@
 const router = require('express').Router();
-const Recipe = require('../db').import('./models/recipe');
-
+const Recipe = require('../db').import('../models/recipe');
+const validateSession = require('../middleware/validate-session');
 // create a new recipe
-router.post('/', (req, res) => {
-    const recipeEntry = {
+router.post('/', validateSession, (req, res) => {
+    const newRecipe = {
         name: req.body.name,
         directions: req.body.directions,
+        category: req.body.category,
         cookTime: req.body.cookTime,
         servings: req.body.servings,
         public: req.body.public,
         photoURL: req.body.photoURL,
     };
-    Log.create(recipeEntry)
+    Recipe.create(newRecipe)
         .then((recipe) => res.status(200).json(recipe))
         .catch((err) =>
             res.status(500).json({
@@ -46,10 +47,11 @@ router.get('/', (req, res) => {
         );
 });
 // get recipe with id matching the request parameter
-router.get('/:entryId', (req, res) => {
-    let userid = req.user.id;
+router.get('/:id', validateSession, (req, res) => {
+    let userId = req.user.id;
+    const recipeId = req.params.id;
     Recipe.findAll({
-        where: { id: entryId, user_id: userid },
+        where: { id: recipeId, user_id: userId },
     })
         .then((recipes) => res.status(200).json(recipes))
         .catch((err) =>
@@ -59,7 +61,7 @@ router.get('/:entryId', (req, res) => {
         );
 });
 // update the recipe matching the request parameter
-router.put('/update/:id', (req, res) => {
+router.put('/:id', validateSession, (req, res) => {
     const updateRecipeEntry = {
         name: req.body.name,
         directions: req.body.directions,
@@ -74,7 +76,7 @@ router.put('/update/:id', (req, res) => {
         .catch((err) => res.status(500).json({ error: err }));
 });
 
-router.delete('/delete/:entryId', (req, res) => {
+router.delete('/delete/:entryId', validateSession, (req, res) => {
     const query = { where: { id: req.params.entryId, user_id: req.user.id } };
 
     Recipe.destroy(query)

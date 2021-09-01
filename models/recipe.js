@@ -4,14 +4,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allNull: false,
     },
-
     name: {
       type: DataTypes.STRING,
       allNull: false,
     },
-
     directions: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(1000),
       allNull: false,
     },
     cookTime: {
@@ -26,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     photoURL: {
       type: DataTypes.STRING,
+      allowNull: true
     },
   });
   return recipe;

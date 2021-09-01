@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
         passwordhash: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        photoURL: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     })
     return User;
