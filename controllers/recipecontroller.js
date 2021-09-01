@@ -21,7 +21,7 @@ router.post('/', validateSession, (req, res) => {
         );
 });
 // get all recipes for a user
-router.get('/', validateSession, (req, res) => {
+router.get('/mine', validateSession, (req, res) => {
     let userid = req.user.id;
     Recipe.findAll({
         where: { user_id: userid },
@@ -70,13 +70,13 @@ router.put('/:id', validateSession, (req, res) => {
         public: req.body.public,
         photoURL: req.body.photoURL,
     };
-    const query = { where: { id: req.params.entryId, user_id: req.user.id } };
+    const query = { where: { id: req.params.id, userId: req.user.id } };
     Recipe.update(updateRecipeEntry, query)
         .then((recipes) => res.status(200).json(recipes))
         .catch((err) => res.status(500).json({ error: err }));
 });
 
-router.delete('/delete/:entryId', validateSession, (req, res) => {
+router.delete('/:id', validateSession, (req, res) => {
     const query = { where: { id: req.params.entryId, user_id: req.user.id } };
 
     Recipe.destroy(query)
