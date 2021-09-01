@@ -2,23 +2,55 @@ const router = require('express').Router();
 const Recipe = require('../db').import('../models/recipe');
 const validateSession = require('../middleware/validate-session');
 // create a new recipe
-router.post('/', validateSession, (req, res) => {
-    const newRecipe = {
-        name: req.body.name,
-        directions: req.body.directions,
-        category: req.body.category,
-        cookTime: req.body.cookTime,
-        servings: req.body.servings,
-        public: req.body.public,
-        photoURL: req.body.photoURL,
-    };
-    Recipe.create(newRecipe)
-        .then((recipe) => res.status(200).json(recipe))
-        .catch((err) =>
-            res.status(500).json({
-                error: err,
-            })
-        );
+router.post('/', validateSession, async (req, res) => {
+    // const newRecipe = {
+    //     name: req.body.name,
+    //     directions: req.body.directions,
+    //     category: req.body.category,
+    //     cookTime: req.body.cookTime,
+    //     servings: req.body.servings,
+    //     isPublic: req.body.isPublic,
+    //     photoURL: req.body.photoURL,
+    // };
+    // Recipe.create(newRecipe)
+    //     .then((recipe) => res.status(200).json(recipe))
+    //     .catch((err) =>
+    //         res.status(500).json({
+    //             error: err,
+    //         })
+    //     );
+    
+    const user = req.user;
+    const {
+        name,
+        category,
+        directions,
+        cookTime, 
+        servings,
+        photoURL,
+        isPublic
+    } = req.body.recipe;
+    try {
+        const newRecipe = await Recipe.create({
+            name: name,
+            category: category,
+            directions: directions,
+            cookTime: cookTime,
+            servings: servings,
+            photoURL: photoURL,
+            isPublic: isPublic,
+            userId: user.id
+        })
+        res.status(200).json({
+            message: 'Recipe successfully created!',
+            recipe: newRecipe
+        })
+    } catch(error) {
+        res.status(500).json({
+            message: 'Unable to create recipe.',
+            error: error
+        })
+    }
 });
 // get all recipes for a user
 router.get('/mine', validateSession, (req, res) => {
