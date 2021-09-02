@@ -1,3 +1,5 @@
+const Recipe = require('../db').import('./recipe');
+
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define('user', {
         email: {
@@ -13,11 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         passwordhash: {
             type: DataTypes.STRING,
             allowNull: false
-        },
-        photoURL: {
-            type: DataTypes.STRING,
-            allowNull: true
         }
     })
+    User.hasMany(Recipe);
     return User;
 }
