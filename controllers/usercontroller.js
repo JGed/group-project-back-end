@@ -20,10 +20,10 @@ router.post('/register', async (req, res) => {
             let emailMessage, usernameMessage;
             for(existingUser of existingUsers) {
                 if(existingUser.email === email) {
-                    emailMessage += `${email} already registered with ClickNCook.`
+                    emailMessage = `${email} already registered with ClickNCook.`
                 }
                 if(existingUser.username === username) {
-                    usernameMessage += `${username} already registered with ClickNCook.`
+                    usernameMessage = `${username} already registered with ClickNCook.`
                 }
             }
             res.status(409).json({
