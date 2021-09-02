@@ -1,119 +1,91 @@
-const router = require('express').Router();
-const Recipe = require('../db').import('../models/recipe');
-const validateSession = require('../middleware/validate-session');
+const router = require("express").Router();
+const Recipe = require("../db").import("../models/recipe");
+const validateSession = require("../middleware/validate-session");
 // create a new recipe
-router.post('/', validateSession, async (req, res) => {
-    // const newRecipe = {
-    //     name: req.body.name,
-    //     directions: req.body.directions,
-    //     category: req.body.category,
-    //     cookTime: req.body.cookTime,
-    //     servings: req.body.servings,
-    //     isPublic: req.body.isPublic,
-    //     photoURL: req.body.photoURL,
-    // };
-    // Recipe.create(newRecipe)
-    //     .then((recipe) => res.status(200).json(recipe))
-    //     .catch((err) =>
-    //         res.status(500).json({
-    //             error: err,
-    //         })
-    //     );
-    
-    const user = req.user;
-    const {
-        name,
-        category,
-        directions,
-        cookTime, 
-        servings,
-        photoURL,
-        isPublic
-    } = req.body.recipe;
-    try {
-        const newRecipe = await Recipe.create({
-            name: name,
-            category: category,
-            directions: directions,
-            cookTime: cookTime,
-            servings: servings,
-            photoURL: photoURL,
-            isPublic: isPublic,
-            userId: user.id
-        })
-        res.status(200).json({
-            message: 'Recipe successfully created!',
-            recipe: newRecipe
-        })
-    } catch(error) {
-        res.status(500).json({
-            message: 'Unable to create recipe.',
-            error: error
-        })
-    }
+router.post("/", validateSession, async (req, res) => {
+  const user = req.user;
+  const { name, category, directions, cookTime, servings, photoURL, isPublic } =
+    req.body.recipe;
+  try {
+    const newRecipe = await Recipe.create({
+      name: name,
+      category: category,
+      directions: directions,
+      cookTime: cookTime,
+      servings: servings,
+      photoURL: photoURL,
+      isPublic: isPublic,
+      userId: user.id,
+    });
+    res.status(200).json({
+      message: "Recipe successfully created!",
+      recipe: newRecipe,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Unable to create recipe.",
+      error: error,
+    });
+  }
 });
 // get all recipes for a user
-router.get('/mine', validateSession, (req, res) => {
-    let userid = req.user.id;
-    Recipe.findAll({
-        where: { user_id: userid },
-    })
-        .then((recipes) => res.status(200).json(recipes))
-        .catch((err) =>
-            res.status(500).json({
-                error: err,
-            })
-        );
+router.get("/mine", validateSession, (req, res) => {
+  const user = req.user.id;
+  Recipe.findAll({ where: { userId: user } })
+    .then((recipes) => res.status(200).json(recipes))
+    .catch((err) =>
+      res.status(500).json({ error: err, message: "Error: No recipes found" })
+    );
 });
 
 // get all publicly available recipes
-router.get('/', (req, res) => {
-    Recipe.findAll({
-        where: { public: true },
-    })
-        .then((recipes) => res.status(200).json(recipes))
-        .catch((err) =>
-            res.status(500).json({
-                error: err,
-            })
-        );
+router.get("/", (req, res) => {
+  Recipe.findAll({
+    where: { isPublic: true },
+  })
+    .then((recipes) => res.status(200).json(recipes))
+    .catch((err) =>
+      res.status(500).json({
+        error: err,
+        message: "Error: No recipes found",
+      })
+    );
 });
-// get recipe with id matching the request parameter
-router.get('/:id', validateSession, (req, res) => {
-    let userId = req.user.id;
-    const recipeId = req.params.id;
-    Recipe.findAll({
-        where: { id: recipeId, user_id: userId },
-    })
-        .then((recipes) => res.status(200).json(recipes))
-        .catch((err) =>
-            res.status(500).json({
-                error: err,
-            })
-        );
-});
+
 // update the recipe matching the request parameter
-router.put('/:id', validateSession, (req, res) => {
-    const updateRecipeEntry = {
-        name: req.body.name,
-        directions: req.body.directions,
-        cookTime: req.body.cookTime,
-        servings: req.body.servings,
-        public: req.body.public,
-        photoURL: req.body.photoURL,
-    };
-    const query = { where: { id: req.params.id, userId: req.user.id } };
-    Recipe.update(updateRecipeEntry, query)
-        .then((recipes) => res.status(200).json(recipes))
-        .catch((err) => res.status(500).json({ error: err }));
+router.put("/update/:entryId", validateSession, (req, res) => {
+  let entryId = req.params.entryId;
+  const updateRecipe = {
+    name: req.body.recipe.name,
+    category: req.body.recipe.category,
+    directions: req.body.recipe.directions,
+    cookTime: req.body.recipe.cookTime,
+    servings: req.body.recipe.servings,
+    isPublic: req.body.recipe.isPublic,
+    photoURL: req.body.recipe.photoURL,
+  };
+  const query = { where: { id: entryId, userId: req.user.id } };
+  console.log(query);
+  Recipe.update(updateRecipe, query)
+    .then((recipes) =>
+      res.status(200).json({ recipes, message: "Recipe successfully updated" })
+    )
+    .catch((err) =>
+      res.status(500).json({ error: err, message: "Error: Recipe not updated" })
+    );
 });
 
-router.delete('/:id', validateSession, (req, res) => {
-    const query = { where: { id: req.params.entryId, user_id: req.user.id } };
+//delete the recipe
+router.delete("/delete/:entryId", validateSession, (req, res) => {
+  let entryId = req.params.entryId;
 
-    Recipe.destroy(query)
-        .then(() => res.status(200).json({ message: 'Recipe Deleted' }))
-        .catch((err) => res.status(500).json({ error: err }));
+  const query = { where: { id: entryId, userId: req.user.id } };
+
+  Recipe.destroy(query)
+    .then(() => res.status(200).json({ message: "Recipe Deleted" }))
+    .catch((err) =>
+      res.status(500).json({ error: err, message: "Error: Recipe not deleted" })
+    );
 });
 
 module.exports = router;

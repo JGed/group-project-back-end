@@ -23,11 +23,11 @@ module.exports = (sequelize, DataTypes) => {
     isPublic: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: false
+      defaultValue: false,
     },
     photoURL: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
   });
   return recipe;
