@@ -17,17 +17,18 @@ router.post('/register', async (req, res) => {
         });
         // if the username or email is already registered construct a message to send back in the response
         if (existingUsers.length > 0) {
-            let message = '';
+            let emailMessage, usernameMessage;
             for(existingUser of existingUsers) {
                 if(existingUser.email === email) {
-                    message += `${email} already registered with ClickNCook.  `
+                    emailMessage += `${email} already registered with ClickNCook.`
                 }
                 if(existingUser.username === username) {
-                    message += `${username} already registered with ClickNCook.  `
+                    usernameMessage += `${username} already registered with ClickNCook.`
                 }
             }
-            res.status(500).json({
-                message: message.trim()
+            res.status(409).json({
+                emailMessage: emailMessage,
+                usernameMessage: usernameMessage,
             });
             return;
         }
@@ -53,7 +54,7 @@ router.post('/register', async (req, res) => {
         // send a success message and token with the repsonse
         res.status(200).json({
             message: 'User sucessfully created!',
-            sesssionToken: token,
+            sessionToken: token,
         });
     } catch (error) {
         // catch error with create method and send it in the response
@@ -72,30 +73,38 @@ router.post('/login', async (req, res) => {
         email,
         password
     } = req.body.user;
-    const user = await User.findOne({
-        where: {
-            email: email
-        }
-    })
-    if(user !== null) {
-        bcrypt.compare(password, user.passwordhash, (err, matches) => {
-            if(!err && matches) {
-                let token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24})
-                res.status(200).json({
-                    message: 'User sucessfully logged in!',
-                    sessionToken: token
-                })
-            }
-            else {
-                res.status(502).json({
-                    message: 'Incorrect password.'
-                })
+    try {
+        const user = await User.findOne({
+            where: {
+                email: email
             }
         })
+        if(user !== null) {
+            bcrypt.compare(password, user.passwordhash, (err, matches) => {
+                if(!err && matches) {
+                    let token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24})
+                    res.status(200).json({
+                        message: 'User sucessfully logged in!',
+                        sessionToken: token
+                    })
+                }
+                else {
+                    res.status(409).json({
+                        passwordMessage: 'Incorrect password.'
+                    })
+                }
+            })
+        }
+        else {
+            res.status(409).json({
+                emailMessage: 'Email not registered.'
+            })
+        }
     }
-    else {
+    catch(error) {
         res.status(500).json({
-            message: 'Email not registered.'
+            mesage: 'Something went wront please try again.',
+            error: error
         })
     }
 })
