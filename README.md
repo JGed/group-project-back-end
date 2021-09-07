@@ -29,6 +29,7 @@ An endpoint for the client to attempt creation of a new user.  If creation is su
 
 ##### Status Codes:
     200: success
+    409: conflict, email or username taken
     500: internal error
 
 ##### POST
@@ -44,6 +45,8 @@ body: {
 //  RESPONSE
 json: {
     message: string, 
+    emailMessage: string,
+    usernameMessage: string,
     sessionToken: string,
     error: object
 }   
@@ -54,8 +57,8 @@ Handles requests for logging in an existing user.  If login is sucessful a sessi
 
 ##### Status Codes:
     200: success
+    409: incorrect password or email not registered
     500: internal error
-    502: incorrect password
 
 ##### POST
 ```js
