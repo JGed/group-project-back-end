@@ -70,8 +70,17 @@ router.get('/:recipeId', optionalValidateSession, async (req, res) => {
     if(recipe !== null) {
       // if a token was sent with the request and the associated user is not the creator of the recipe
       // the views of the recipe will increase
-      if(user !== undefined && user.id !== recipe.userId) {
-        recipe = await recipe.increment('views');
+      if(user?.id !== recipe.userId) {
+          if(recipe.isPublic) {
+              if(user !== undefined) {
+                recipe = await recipe.increment('views');
+              }
+          }
+          else {
+              res.status(403).json({
+                  message: 'You are not authorized to view this recipe',
+              })
+          }
       }
       // return the recipe
       res.status(200).json({
@@ -88,7 +97,7 @@ router.get('/:recipeId', optionalValidateSession, async (req, res) => {
 
 // update the recipe matching the request parameter
 router.put('/:recipeId', validateSession, (req, res) => {
-    let recipeId = req.params.entryId;
+    let recipeId = req.params.recipeId;
     const updateRecipe = {
         name: req.body.recipe.name,
         category: req.body.recipe.category,
