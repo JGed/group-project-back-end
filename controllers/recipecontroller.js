@@ -52,7 +52,25 @@ router.get('/mine', validateSession, (req, res) => {
 router.get('/owner/:username', async (req, res) => {
     try {
         const recipes = await Recipe.findAll({
-            where: { owner: req.body.owner.name, isPublic: true },
+            where: { owner: req.params.username, isPublic: true },
+        });
+        if (recipes.length > 0) {
+            res.status(200).json({
+                recipes: recipes,
+            });
+        } else {
+            res.status(404).json({
+                message: 'No recipes found.',
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Internal error' });
+    }
+});
+router.get('/category/:cat', async (req, res) => {
+    try {
+        const recipes = await Recipe.findAll({
+            where: { category: req.params.cat, isPublic: true },
         });
         if (recipes.length > 0) {
             res.status(200).json({
