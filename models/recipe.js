@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     directions: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.STRING(2000),
       allowNull: false,
     },
     cookTime: {
