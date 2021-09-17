@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const Recipe = require('../db').import('../models/recipe');
+const sequelize = require('../db');
+const Recipe = sequelize.import('../models/recipe');
 const optionalValidateSession = require('../middleware/optional-validate-session');
 const validateSession = require('../middleware/validate-session');
 // create a new recipe
@@ -13,11 +14,12 @@ router.post('/', validateSession, async (req, res) => {
         servings,
         photoURL,
         isPublic,
+        views
     } = req.body.recipe;
     try {
         const newRecipe = await Recipe.create({
             name: name,
-            category: category,
+            category: category.toLowerCase(),
             directions: directions,
             cookTime: cookTime,
             servings: servings,
@@ -25,6 +27,7 @@ router.post('/', validateSession, async (req, res) => {
             isPublic: isPublic,
             userId: user.id,
             owner: user.username,
+            views: views
         });
         res.status(200).json({
             message: 'Recipe successfully created!',
@@ -67,10 +70,23 @@ router.get('/owner/:username', async (req, res) => {
         res.status(500).json({ error: err, message: 'Internal error' });
     }
 });
+const formatOrder = (order) => {
+    switch(order) {
+        case 'views':
+            return ['views', 'DESC'];
+        case 'newest':
+            return ['createdAt', 'DESC'];
+        default:
+            return;
+    }
+
+}
 router.get('/category/:cat', async (req, res) => {
+    const order = formatOrder(req.query.order);
     try {
         const recipes = await Recipe.findAll({
             where: { category: req.params.cat, isPublic: true },
+            order: order ? [order] : sequelize.random()
         });
         if (recipes.length > 0) {
             res.status(200).json({
@@ -89,6 +105,7 @@ router.get('/category/:cat', async (req, res) => {
 router.get('/', (req, res) => {
     Recipe.findAll({
         where: { isPublic: true },
+        order: sequelize.random()
     })
         .then((recipes) => res.status(200).json(recipes))
         .catch((err) =>
