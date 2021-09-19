@@ -38,6 +38,7 @@ router.post('/', validateSession, async (req, res) => {
             message: 'Unable to create recipe.',
             error: error,
         });
+        console.log(error);
     }
 });
 // get all recipes for a user
@@ -70,19 +71,26 @@ router.get('/owner/:username', async (req, res) => {
         res.status(500).json({ error: err, message: 'Internal error' });
     }
 });
-const formatOrder = (order) => {
-    switch(order) {
-        case 'views':
-            return ['views', 'DESC'];
-        case 'newest':
-            return ['createdAt', 'DESC'];
-        default:
-            return;
+const formatQuery = (query) => {
+    const { orderby, direction } = query ?? { };
+
+    const formatDirection = d => d === 'decreasing' ? 'DESC' : 'ASC';
+
+    if(orderby) {
+        switch(orderby) {
+            case 'views':
+                return ['views', formatDirection(direction)];
+            case 'date':
+                return ['createdAt', formatDirection(direction)];
+            default: 
+                return;
+        }
     }
 
 }
 router.get('/category/:cat', async (req, res) => {
-    const order = formatOrder(req.query.order);
+    const order = formatQuery(req.query);  
+    
     try {
         const recipes = await Recipe.findAll({
             where: { category: req.params.cat, isPublic: true },
