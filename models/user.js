@@ -17,6 +17,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
     })
-    User.hasMany(Recipe);
+    User.hasMany(Recipe, {foreignKey: 'owner', sourceKey: 'username'});
     return User;
 }
