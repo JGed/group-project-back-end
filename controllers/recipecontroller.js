@@ -90,15 +90,19 @@ const formatQuery = (query) => {
 }
 router.get('/category/:cat', async (req, res) => {
     const order = formatQuery(req.query);  
-    
+    const page = req.query.page ?? 1; 
     try {
+        const count = await Recipe.count({where: {category: req.params.cat, isPublic: true}})
         const recipes = await Recipe.findAll({
             where: { category: req.params.cat, isPublic: true },
-            order: order ? [order] : sequelize.random()
+            order: order ? [order] : undefined,
+            limit: 28,
+            offset: 28*(page - 1)
         });
         if (recipes.length > 0) {
             res.status(200).json({
                 recipes: recipes,
+                pages: Math.ceil(count / 28)
             });
         } else {
             res.status(404).json({
