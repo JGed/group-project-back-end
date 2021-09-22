@@ -88,27 +88,33 @@ const formatQuery = (query) => {
     }
   }
 };
-router.get("/category/:cat", async (req, res) => {
-  const order = formatQuery(req.query);
 
-  try {
-    const recipes = await Recipe.findAll({
-      where: { category: req.params.cat, isPublic: true },
-      order: order ? [order] : sequelize.random(),
-    });
-    if (recipes.length > 0) {
-      res.status(200).json({
-        recipes: recipes,
-      });
-    } else {
-      res.status(404).json({
-        message: "No recipes found.",
-      });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err, message: "Internal error" });
-  }
+router.get('/category/:cat', async (req, res) => {
+    const order = formatQuery(req.query);  
+    const page = req.query.page ?? 1; 
+    try {
+        const count = await Recipe.count({where: {category: req.params.cat, isPublic: true}})
+        const recipes = await Recipe.findAll({
+            where: { category: req.params.cat, isPublic: true },
+            order: order ? [order] : undefined,
+            limit: 28,
+            offset: 28*(page - 1)
+        });
+        if (recipes.length > 0) {
+            res.status(200).json({
+                recipes: recipes,
+                pages: Math.ceil(count / 28)
+            });
+        } else {
+            res.status(404).json({
+                message: 'No recipes found.',
+            });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err, message: 'Internal error' });
+    }  
 });
+
 // get all publicly available recipes
 router.get("/", (req, res) => {
   Recipe.findAll({
