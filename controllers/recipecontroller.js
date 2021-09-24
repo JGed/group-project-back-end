@@ -3,6 +3,8 @@ const sequelize = require('../db');
 const Recipe = sequelize.import('../models/recipe');
 const optionalValidateSession = require('../middleware/optional-validate-session');
 const validateSession = require('../middleware/validate-session');
+const cloudinary = require("cloudinary").v2;
+
 // create a new recipe
 router.post('/', validateSession, async (req, res) => {
     const user = req.user;
@@ -205,6 +207,23 @@ router.delete('/:recipeId', validateSession, (req, res) => {
                 .status(500)
                 .json({ error: err, message: 'Error: Recipe not deleted' })
         );
+});
+
+//upload recipe photo
+router.get("/photo/cloudsign", validateSession, async (req, res) => {
+  try {
+    const timestamp = Math.floor(new Date().getTime() / 1000).toString();
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp: timestamp, upload_preset: "clickncook_recipe_pic" },
+      process.env.CLOUDINARY_SECRET
+    );
+
+    res.status(200).json({ signature, timestamp });
+  } catch (err) {
+    res.status(500).json({
+      message: "failed to sign",
+    });
+  }
 });
 
 module.exports = router;
