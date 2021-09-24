@@ -119,7 +119,8 @@ router.get('/category/:cat', async (req, res) => {
 router.get('/', (req, res) => {
     Recipe.findAll({
         where: { isPublic: true },
-        order: sequelize.random()
+        order: sequelize.random(),
+        limit: 100
     })
         .then((recipes) => res.status(200).json(recipes))
         .catch((err) =>
